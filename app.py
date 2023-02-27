@@ -18,6 +18,7 @@ column_options = [{'label': 'Energía MJ', 'value': 'Energía MJ '},
 column_names = ['Energía MJ ', 'Presión Máxima Pa', 'Presión Reducida Pa']
 
 app = dash.Dash(__name__)
+server = app.server
 
 app.layout = html.Div(children=[
     html.Div(children=[
