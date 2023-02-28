@@ -11,7 +11,7 @@ from dash.dependencies import Input, Output
 df_new = pd.read_excel('DatosGraficarConInfrasonidos.xlsx',sheet_name = 'Hoja1')
 df2 = pd.read_excel('senales_infrasonido_2020_2022.xlsx',sheet_name = 'Hoja1')
 df2 = df2[df2['Energía MJ '] < 124 ]
-df_is = pd.read_excel('señalesinfrasonidoactualizadas.xlsx',sheet_name = 'Señales infrasonido 2020 - 2022')
+df_is = pd.read_excel('senalesinfrasonidoactualizadas.xlsx',sheet_name = 'Señales infrasonido 2020 - 2022')
 
 # Reading SO2 new file
 dtype_dict = {'FECHA': str, 'Max': float, 'Prom': float}
@@ -36,74 +36,46 @@ server = app.server
 
 app.layout = html.Div(children=[
     html.Div(children=[
+    html.Div(children=[
     html.Img(src='https://www2.sgc.gov.co/Style%20Library/themes/Intranet/images/logo-b.png')], 
-             style={'height':120, 'width':250, 'background-color':'lightgray'}),
+             style={'height':145, 'width':250, 'background-color':'lightgray', 'display':'inline-block', 'border':'0px dotted red'}),
     html.Div(children=[
-    html.H1("Nueva visualización")]),
+    html.H1("Datos de infrasonido VNR 2020 - 2022")],
+            style={'display':'inline-block', 'width':'70%', 'border':'0px dotted red', 'font-family':  'ABCDiatype', 'justify-content': 'center'})],
+             style={'border':'0px dotted red','display': 'table', 'width':'100%', 'justify-content': 'center' }),
     html.Div(children=[
+        html.Div(children=[
     # Add a dropdown with identifier
     dcc.Dropdown(id='choose_col',
         # Set the available options with noted labels and values
         options = column_options,
-            style={'width':'200px', 'margin':'0 auto', 'display':'inline-block'}),
-    dcc.Dropdown(id='choose_so2',
-        # Set the available options with noted labels and values
-        options = column_options,
-            style={'width':'200px', 'margin':'0 auto', 'display':'inline-block'})],
-            style={'height':50, 'width':400, 'background-color':'lightgray'}),
+            style={'width':'200px',  'margin':'auto', 'display':'inline-block'})],
+                 style={'display': 'flex', 'align-items': 'center', 'justify-content': 'center' }
+                 )],
+            style={'height':40, 'width':250, 'background-color':'lightgray'}),
     html.Div(children=[
-        dcc.Graph(id='infrasonido')])
+        dcc.Graph(id='infrasonido')]),
+     html.Div(children=[
+        dcc.Graph(id='infrasonido_so2')])
 ])
 
 @app.callback(
     # Set the input and output of the callback to link the dropdown to the graph
     Output(component_id='infrasonido', component_property='figure'),
+    Output(component_id='infrasonido_so2', component_property='figure'),
     Input(component_id='choose_col', component_property='value')
 )
-# def update_plot(selection):
-#     column = 'Presión Máxima Pa'
-#     if selection:
-#         column = selection
-    
-#     fig3 = go.Figure()
-
-#     fig3 = make_subplots(rows=1, cols=1, 
-#                      subplot_titles=( column + " Vs. Altura (m)",),
-#                      specs=[[{"secondary_y": True}]])
-
-#     fig3.update_annotations(font_size=22)
-
-#     fig3.add_trace(go.Scatter(x=df_new['Fecha'].to_numpy(), y=df_new['Altura (m)'].to_numpy(),
-#                     name='Altura (m)', mode='markers', marker=dict(color="LightSkyBlue", size=15, opacity=0.4)), secondary_y=False,
-#                     row=1, col=1)
-
-#     fig3.add_trace(go.Scatter(x=df2['Fecha'].to_numpy(), y=df2[column].to_numpy(),
-#                     mode='lines',
-#                     name=column, marker=dict(color="MediumPurple")), secondary_y=True,
-#                     row=1, col=1)
-
-#     fig3.update_layout(dict(yaxis2={'anchor': 'x', 'overlaying': 'y', 'side': 'left'},
-#                   yaxis={'anchor': 'x', 'domain': [0.0, 1.0], 'side':'right'}),
-#                    font=dict( family="Open Sans, verdana, arial, sans-serif", size=18 ))
-
-# # Set y-axes titles
-#     fig3.update_yaxes(title_text="Altura (m)", secondary_y=False)
-#     fig3.update_yaxes(title_text=column, secondary_y=True)  
-    
-#     return fig3  
 
 def update_plot(selection):
 
-    column = 'Presión Máxima Pa'
+    column = 'Energía MJ'
     if selection:
          column = selection
 
     figred = go.Figure()
 
-
     figred = make_subplots(rows=1, cols=1,
-                       subplot_titles=(
-                           "Presión reducida (Pa) Vs. Altura (m)",),
+                       subplot_titles=( column + " Vs. Altura (m)",),
                        specs=[[{"secondary_y": True}]])
 
     figred.update_annotations(font_size=22)
@@ -119,14 +91,40 @@ def update_plot(selection):
 
     figred.update_layout(dict(yaxis2={'anchor': 'x', 'overlaying': 'y', 'side': 'left'},
                           yaxis={'anchor': 'x', 'domain': [0.0, 1.0], 'side': 'right'}),
-                     height=600, width=1200, font=dict(family="Open Sans, verdana, arial, sans-serif", size=18),
+                      font=dict(family="Open Sans, verdana, arial, sans-serif", size=18),
                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
 
     # Set y-axes titles
     figred.update_yaxes(title_text="Altura (m)", secondary_y=False)
     figred.update_yaxes(title_text=column, secondary_y=True)
+    
+    figred2 = go.Figure()
 
-    return figred
+    figred2 = make_subplots(rows=1, cols=1, 
+                     subplot_titles=(column + " Vs. SO<sup>2</sup> (Ton/día)",),
+                     specs=[[{"secondary_y": True}]])
+
+    figred2.update_annotations(font_size=22)
+
+    figred2.add_trace(go.Scatter(x=df_so2['FECHA'].to_numpy(), y=df_so2['Max'].to_numpy(),
+                    name='SO<sup>2</sup> (Ton/día)', mode='markers', marker=dict(color="rgb(169,245,196)", size=15, opacity=0.4)), secondary_y=False,
+                    row=1, col=1)
+
+    figred2.add_trace(go.Scatter(x=df_is['Fecha/ Hora UTC'].to_numpy(), y=df_is[column].to_numpy(),
+                    mode='lines',
+                    name='Presión reducida (Pa)', marker=dict(color="MediumPurple")), secondary_y=True,
+                    row=1, col=1)
+
+    figred2.update_layout(dict(yaxis2={'anchor': 'x', 'overlaying': 'y', 'side': 'left'},
+                  yaxis={'anchor': 'x', 'domain': [0.0, 1.0], 'side':'right'}),
+                    font=dict( family="Open Sans, verdana, arial, sans-serif", size=18 ),
+                    paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+
+    # Set y-axes titles
+    figred2.update_yaxes(title_text='SO<sup>2</sup> (Ton/día)', secondary_y=False)  
+    figred2.update_yaxes(title_text=column, secondary_y=True)
+
+    return (figred, figred2)
         
 
 if __name__ == '__main__':
